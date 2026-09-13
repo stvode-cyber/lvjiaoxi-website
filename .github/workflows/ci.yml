@@ -53,13 +53,14 @@ jobs:
         run: |
           echo "=== 巡检汇总 ==="
           cat /tmp/inspect.log | grep "✅ 通过:" || true
-          FAIL_COUNT=$(cat /tmp/inspect.log | grep -c "❌ 缺失！\|❌ 不一致\|❌ 失败") || true
+          # 排除汇总统计行（含 "通过:"/"警告:"/"失败:" 的行），只数具体失败项
+          FAIL_COUNT=$(grep -E "❌" /tmp/inspect.log | grep -vE "通过:|警告:|失败:" | wc -l)
           echo ""
-          echo "失败项数: $FAIL_COUNT"
+          echo "具体失败项数: $FAIL_COUNT"
           if [ "$FAIL_COUNT" -gt 0 ]; then
             echo ""
             echo "=== ❌ 需修复的问题 ==="
-            cat /tmp/inspect.log | grep -E "❌ 缺失|❌ 不一致|❌ 失败" || true
+            grep -E "❌" /tmp/inspect.log | grep -vE "通过:|警告:|失败:"
             echo ""
             echo "👉 修复方法：跑 node tools/inspect-ai-team.js 看完整输出，按提示更新 Agent/Skill"
             exit 1
