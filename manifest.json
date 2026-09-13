@@ -1,0 +1,24 @@
+{
+  "name": "绿角犀 LVJIAOXI",
+  "short_name": "绿角犀",
+  "description": "绿角犀 —— 专注效率应用与精品游戏的数字产品公司，应用与游戏，触手可及。",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0a0e27",
+  "theme_color": "#0a0e27",
+  "icons": [
+    {
+      "src": "assets/img/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

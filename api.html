@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API 文档 | 绿角犀</title>
+  <meta name="description" content="绿角犀官网后台与公开接口文档：产品（含批量管理与 CSV 导入）、浏览/下载埋点、留言、产品反馈、站点维护模式、管理员与数据看板接口。" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0e27" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('gr-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .api-main { padding: 40px 0 90px; }
+    .api-group { margin-top: 38px; }
+    .api-group h2 { font-size: 22px; margin-bottom: 6px; }
+    .api-group .hint { color: var(--text-dim); font-size: 14px; margin-bottom: 16px; }
+    .ep {
+      display: grid; grid-template-columns: 92px 1fr; gap: 14px;
+      padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+      background: var(--bg-card); margin-bottom: 10px;
+    }
+    .ep .m {
+      font-weight: 700; font-size: 13px; letter-spacing: .5px; text-align: center;
+      align-self: start; padding: 4px 0; border-radius: 6px; color: #fff;
+    }
+    .m.GET { background: #2e8b57; } .m.POST { background: #6c5ce7; }
+    .m.PUT { background: #c9821a; } .m.DELETE { background: #c0392b; }
+    .ep .path { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 14px; }
+    .ep .desc { color: var(--text-dim); font-size: 14px; margin-top: 4px; }
+    .ep .auth { display: inline-block; margin-top: 6px; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
+    .auth.pub { background: rgba(46,139,87,.18); color: #4fd18b; }
+    .auth.token { background: rgba(108,92,231,.18); color: #b3a8f5; }
+    .auth.admin { background: rgba(192,57,43,.18); color: #ff9b8f; }
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 24px; }
+    .kv { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    code.inline { background: var(--bg-card); padding: 1px 6px; border-radius: 5px; font-size: 13px; }
+    .panel.tight { padding: 20px 22px; }
+  </style>
+</head>
+<body data-page="api">
+
+  <a class="skip-link" href="#main">跳到主内容</a>
+
+  <nav class="nav">
+    <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo.svg" alt="绿角犀" width="30" height="30" decoding="async" /> 绿角犀</a>
+    <div class="links">
+      <a href="index.html#home" data-i18n="nav.home">首页</a>
+      <a href="index.html#company" data-i18n="nav.company">公司</a>
+      <a href="download.html#apps" data-i18n="nav.apps">应用</a>
+      <a href="download.html#games" data-i18n="nav.games">游戏</a>
+      <a href="contact.html" data-i18n="nav.contact">联系</a>
+      <a href="download.html" class="cta" data-i18n="nav.download">下载</a>
+    </div>
+    <div class="lang-select"></div>
+    <form class="nav-search" role="search" action="download.html" aria-label="站内搜索" data-i18n-title="nav.searchForm">
+      <input id="nav-q" type="search" name="q" placeholder="搜索产品…" autocomplete="off" aria-label="搜索产品" data-i18n-ph="nav.searchPh" data-i18n-title="nav.searchInput" />
+      <button type="submit" aria-label="搜索" data-i18n-title="nav.searchBtn">🔍</button>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+      <span class="icon-moon" aria-hidden="true">🌙</span><span class="icon-sun" aria-hidden="true">☀️</span>
+    </button>
+    <button class="hamburger" type="button" aria-label="打开菜单"><span></span></button>
+  </nav>
+
+  <main id="main" tabindex="-1" class="api-main">
+    <div class="container">
+
+      <header class="hero subhero" style="padding:10px 0 0;">
+        <span class="badge reveal">🛠 接口参考</span>
+        <h1 class="reveal" data-delay="1">API 文档</h1>
+        <p class="slogan reveal" data-delay="2">绿角犀官网后台与公开接口一览。所有接口基于 JSON，base URL 即站点根域名。</p>
+      </header>
+
+      <div class="panel tight reveal" style="margin-top:26px;">
+        <h3 style="margin:0 0 10px;">约定</h3>
+        <ul style="margin:0; padding-left:20px; color:var(--text-dim); line-height:1.9;">
+          <li>基础地址：<code class="inline">https://&lt;你的域名&gt;</code>（本地开发为 <code class="inline">http://localhost:3000</code>）。</li>
+          <li>请求与响应体均为 <code class="inline">application/json</code>（埋点接口除外，仅返回状态）。</li>
+          <li>后台接口需在请求头携带 <code class="inline">Authorization: Bearer &lt;token&gt;</code>；<code class="inline">admin</code> 角色才可执行写操作，<code class="inline">viewer</code> 仅可读。</li>
+          <li>失败统一返回 <code class="inline">{ "error": "...", "requestId": "..." }</code>，便于排障。</li>
+        </ul>
+      </div>
+
+      <!-- 公共接口 -->
+      <section class="api-group">
+        <h2>公共接口（无需登录）</h2>
+        <div class="hint">面向前端展示与埋点，可被匿名调用（部分带限流）。</div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/health</div>
+            <div class="desc">轻量健康检查，返回 <code class="inline">status / uptime / time / db</code>。不暴露 Node 版本。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/health/detail</div>
+            <div class="desc">深度检查：数据库、备份、备份校验、磁盘、内存、日志；异常返回 503。需登录。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/products?type=app|game&amp;category=分类</div>
+            <div class="desc">已上架产品列表；可按类型 / 分类筛选，返回 <code class="inline">category</code>、<code class="inline">sort</code>、<code class="inline">image</code>（产品大图，空=卡片回退 emoji 图标）字段。按排序权重 <code class="inline">sort</code> 降序排列（权重越大越靠前，实现产品置顶），同权重回退到 ID 升序。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/products/hot?limit=N</div>
+            <div class="desc">热门下载排行：仅已上架产品，按下载量降序返回 TOP N（<code class="inline">limit</code> 1~10 钳制，缺省 5）。条目含完整产品字段 + <code class="inline">downloads</code> 计数。下载量已按同 IP 24h 窗口去重。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/products/:id</div>
+            <div class="desc">单个产品详情（含下载量、分类、截图等）。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/products/:id/related?limit=N</div>
+            <div class="desc">相关推荐：<strong>同分类优先 → 同类型补充 → 其余兜底</strong>，均排除当前产品，按下载量/排序权重/ID 综合排序。<code class="inline">limit</code> 1~8 钳制（缺省 4）；产品不存在 404、非法 id 400。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/categories</div>
+            <div class="desc">产品分类枚举（后台可维护）：返回 <code>[{id, name}]</code>，下载页分类区据此自动生成。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/announcement</div>
+            <div class="desc">前台公告条：返回最新一条启用中的公告 <code>{id, content, created_at, updated_at}</code>；无公告返回 <code>null</code>。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/views</div>
+            <div class="desc">浏览量埋点。限流 60 次/分钟。Body：<code class="inline">{ "page": "/", "referer": "", "ua": "…", "lang": "…", "tz": "…" }</code>（ua/lang/tz 用于后台「访问分析」的浏览器/系统/语言/时区分布，可缺省）。</div>
+            <span class="auth pub">公开 · 限流</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/downloads</div>
+            <div class="desc">下载量埋点。限流 30 次/分钟。Body：<code class="inline">{ "productId": 1 }</code></div>
+            <span class="auth pub">公开 · 限流</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/contact</div>
+            <div class="desc">提交留言/联系表单。限流 30 次/10 分钟；含蜜罐字段防滥用。Body：<code class="inline">{ "name", "email", "message", "website"(蜜罐留空) }</code></div>
+            <span class="auth pub">公开 · 限流</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/feedback</div>
+            <div class="desc">提交产品反馈。限流 5 次/10 分钟（按 IP）；仅允许反馈<strong>上架中</strong>的产品（否则 404）。Body：<code class="inline">{ "productId", "name", "email", "content", "rating"(0~5 可缺省), "company"(蜜罐留空) }</code>。内容 1~500 字、邮箱（可选）须合法；蜜罐命中 / 校验失败返回 400。返回 <code>{ ok:true, id }</code>。</div>
+            <span class="auth pub">公开 · 限流</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/products/:id/feedback?limit=N</div>
+            <div class="desc">前台评分聚合（详情页评价区）：仅统计<strong>后台已审核（status=done）</strong>的反馈，返回 <code>{ count, ratedCount, avg, rows }</code>——<code class="inline">count</code> 总条数（含无评分）、<code class="inline">ratedCount</code> 有评分条数、<code class="inline">avg</code> 平均分（保留 1 位小数，无评分 0）、<code class="inline">rows</code> 最新评价摘要（时间倒序，<code class="inline">limit</code> 1~20 钳制缺省 5）。未审核反馈前台不可见；产品不存在 404、非法 id 400。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 后台接口 -->
+      <section class="api-group">
+        <h2>后台接口（Bearer Token）</h2>
+        <div class="hint">登录后所有请求携带 <code class="inline">Authorization: Bearer &lt;token&gt;</code>。写操作需 <code class="inline">admin</code> 角色。</div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/login</div>
+            <div class="desc">登录获取 Token。Body：<code class="inline">{ "username", "password" }</code>。返回 <code class="inline">{ token, expiresAt, role, username }</code>。</div>
+            <span class="auth pub">公开</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/password</div>
+            <div class="desc">修改当前账号口令（旧口令校验）。写入后立即使旧 Token 失效。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/admins</div>
+            <div class="desc">列出管理员账号（id / username / role / created_at）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/admins</div>
+            <div class="desc">新建管理员。Body：<code class="inline">{ "username", "password", "role": "admin|viewer" }</code>。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/admins/:id</div>
+            <div class="desc">修改管理员角色。Body：<code class="inline">{ "role": "admin|viewer" }</code>。最后一个 admin 不可降级为 viewer（防止后台锁死）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/admins/:id</div>
+            <div class="desc">删除管理员账号。不可删除当前登录账号；最后一个 admin 不可删除（防止后台锁死）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/backup</div>
+            <div class="desc">触发一次数据库备份并即时校验完整性。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/stats</div>
+            <div class="desc">数据看板：浏览/下载趋势、未处理留言数、产品上下架统计、访问分析分布（<code class="inline">browsers/oses/langs/timezones</code>）与<strong>反馈概览</strong>（<code class="inline">feedback: {total, pending, ratedCount, avg, byProduct, week[7]}</code>：总数/未处理/有评分数/平均分/按产品分布 TOP5/近 7 天趋势）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/stats/trend?days=7|14|30</div>
+            <div class="desc">流量趋势：按天返回浏览/下载量 + 区间合计。days 钳制 1~90（默认 14）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/sysinfo</div>
+            <div class="desc">系统信息：备份状态、磁盘占用、是否为默认口令等。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/audit?page=1&amp;pageSize=10&amp;keyword=&amp;action=login</div>
+            <div class="desc">操作审计日志：服务端分页（page/pageSize，上限 100）+ 关键词（操作/详情/IP 模糊）+ 操作类型筛选，返回 { rows, total }。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/accesslog</div>
+            <div class="desc">最近 100 条访问日志（含轮转备份）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/products</div>
+            <div class="desc">后台产品列表（含下架项与下载量）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/products</div>
+            <div class="desc">新建产品。Body 含 <code class="inline">title, type, category, desc, downloadUrl, visible</code> 等，<code class="inline">sort</code>（整数，-9999~9999）为排序权重，越大越靠前；<code class="inline">image</code> 为产品大图（http(s) 链接或站内 <code class="inline">/assets/img/…</code> 路径，空=回退 emoji，拒绝 <code class="inline">javascript:</code>/<code class="inline">data:</code> 等危险协议）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/products/import</div>
+            <div class="desc">CSV 批量导入产品（admin）。Body：<code class="inline">{ "csv": "名称,类型,分类,…\n…" }</code>。RFC4180 解析（引号包裹/转义/CRLF/自动去 BOM），表头支持中英文别名（如 <code class="inline">名称/name</code>、<code class="inline">下载链接/download_url</code>），类型列可写 <code class="inline">应用/游戏</code> 或 <code class="inline">app/game</code>。逐行校验（与手动上架同规则），<strong>任一行非法则整批 400 拒绝并返回 <code>{ok:false,total,failed:[{line,error}]}</code></strong>（line 为 CSV 行号）；全部合法则事务写入并返回 <code>{ok:true,imported,total,ids}</code>。单次 ≤100 行，写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/products/bulk/status</div>
+            <div class="desc">批量上架 / 下架（admin）。Body：<code class="inline">{ "ids": [1,2,3], "status": "on|off" }</code>。<code>ids</code> 须为 1~500 个正整数（空 / 超长 / 含非法值 → 400）；返回 <code>{ ok:true, changed:N }</code>，写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/products/bulk/category</div>
+            <div class="desc">批量修改分类（admin）。Body：<code class="inline">{ "ids": [1,2], "category": "工具" }</code>。<code>category</code> 必须为后台维护的<strong>枚举分类</strong>（空串 = 清空分类；非法字符 / 非枚举项 → 400）；返回 <code>{ ok:true, changed:N }</code>，写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/products/bulk/delete</div>
+            <div class="desc">批量删除产品（admin）。Body：<code class="inline">{ "ids": [1,2] }</code>（ids 校验同上）；返回 <code>{ ok:true, changed:N }</code>，写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/products/:id</div>
+            <div class="desc">更新产品信息。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/products/:id</div>
+            <div class="desc">下架并删除产品。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/upload</div>
+            <div class="desc">产品图片直传（admin）。Body：<code class="inline">{ "data": "data:image/png;base64,…" }</code>。仅接受 PNG / JPG / WebP / GIF（魔数嗅探校验内容，拒绝伪装文件），单图 ≤2MB；成功落盘 <code class="inline">assets/img/products/</code> 并返回 <code class="inline">{ ok:true, url:"/assets/img/products/…" }</code>，可直接填回产品的 <code class="inline">image</code> 字段。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/categories</div>
+            <div class="desc">产品分类列表（含各分类使用产品数 <code class="inline">usage</code>，供删除保护参考），返回 <code>{rows:[{id,name,created_at,usage}]}</code>。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/categories</div>
+            <div class="desc">新增分类 <code>{ "name": "效率" }</code>；名称重复返回 409，字符/长度非法返回 400。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/categories/:id</div>
+            <div class="desc">重命名分类（同步更新引用该分类的所有产品，保持数据一致）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/categories/:id</div>
+            <div class="desc">删除分类；该分类下有产品使用时返回 409（防孤儿引用），产品表单与下载页分类区将随之变化。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/announcements</div>
+            <div class="desc">公告列表（含停用项），按 id 倒序，返回 <code>{rows:[{id,content,enabled,created_at,updated_at}]}</code>。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/announcements</div>
+            <div class="desc">发布公告。Body：<code class="inline">{ "content": "…", "enabled": 1 }</code>（enabled 可省，默认 1）。内容非空且 ≤200 字符，写审计；发布后最新一条启用中的公告立即在前台公告条展示。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/announcements/:id</div>
+            <div class="desc">编辑公告内容 / 启停。Body：<code class="inline">{ "content": "…", "enabled": 0|1 }</code>。停用后前台自动回退到上一条启用公告。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/announcements/:id</div>
+            <div class="desc">删除公告，写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/maintenance</div>
+            <div class="desc">读取站点维护模式状态，返回 <code>{ enabled: 0|1, message: "…" }</code>。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/maintenance</div>
+            <div class="desc">开启 / 关闭站点维护模式（admin）。Body：<code class="inline">{ "enabled": 1, "message": "站点升级中…" }</code>。<code>message</code> 维护提示语 ≤200 字符（可省，前台维护页展示）。开启后前台 HTML 与公开业务 API 统一返回 <strong>503</strong>（后台页 / 后台接口 / 静态资源 / <code>/api/health*</code> / <code>/api/site</code> 保持可用，管理员可随时关闭）；写审计 <code>maintenance_on/off</code>。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/contacts</div>
+            <div class="desc">留言列表（服务端分页，返回 <code>{rows, total}</code>）。query：<code>page</code>、<code>pageSize</code>（上限 100）、<code>keyword</code>（姓名/邮箱/留言模糊）、<code>status</code>（new|done）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/contacts/:id/status</div>
+            <div class="desc">更新留言状态（如 已处理 / 已忽略）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/contacts/:id</div>
+            <div class="desc">删除留言。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/contacts/batch-status</div>
+            <div class="desc">批量更新留言状态（body：<code>{ids:[...], status}</code>，单次上限 100）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m POST">POST</div>
+          <div>
+            <div class="path">/api/admin/contacts/batch-delete</div>
+            <div class="desc">批量删除留言（body：<code>{ids:[...]}</code>，单次上限 100，写审计日志）。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m GET">GET</div>
+          <div>
+            <div class="path">/api/admin/feedback</div>
+            <div class="desc">产品反馈列表（服务端分页，返回 <code>{rows, total}</code>，联表产品名）。query：<code>page</code>、<code>pageSize</code>、<code>product_id</code>（按产品筛选）、<code>keyword</code>（姓名/内容/邮箱模糊）、<code>status</code>（new|done）。</div>
+            <span class="auth token">需 Token</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m PUT">PUT</div>
+          <div>
+            <div class="path">/api/admin/feedback/:id</div>
+            <div class="desc">更新反馈状态（admin）。Body：<code class="inline">{ "status": "new|done" }</code>（非法值 400），写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+
+        <div class="ep">
+          <div class="m DELETE">DELETE</div>
+          <div>
+            <div class="path">/api/admin/feedback/:id</div>
+            <div class="desc">删除反馈（admin），写审计。</div>
+            <span class="auth admin">admin</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 数据模型 -->
+      <section class="api-group">
+        <h2>数据模型速览</h2>
+        <div class="hint">便于对接前端与第三方系统。</div>
+        <div class="panel tight" style="margin-bottom:10px;">
+          <h3 style="margin:0 0 8px;">Product（产品）</h3>
+          <p class="kv" style="margin:0; color:var(--text-dim); font-size:13px; word-break:break-all;">
+            id, title, type(app|game), category, desc, icon, screenshots[], downloadUrl, version, size, visible(bool), views, downloads, createdAt, updatedAt
+          </p>
+        </div>
+        <div class="panel tight" style="margin-bottom:10px;">
+          <h3 style="margin:0 0 8px;">Contact（留言）</h3>
+          <p class="kv" style="margin:0; color:var(--text-dim); font-size:13px; word-break:break-all;">
+            id, name, email, message, status(pending|done|ignored), ip, createdAt
+          </p>
+        </div>
+        <div class="panel tight">
+          <h3 style="margin:0 0 8px;">Admin（管理员）</h3>
+          <p class="kv" style="margin:0; color:var(--text-dim); font-size:13px; word-break:break-all;">
+            id, username, role(admin|viewer), createdAt —— 口令以 scrypt + 独立盐存储，不暴露明文
+          </p>
+        </div>
+        <div class="panel tight">
+          <h3 style="margin:0 0 8px;">Feedback（产品反馈）</h3>
+          <p class="kv" style="margin:0; color:var(--text-dim); font-size:13px; word-break:break-all;">
+            id, product_id(联表 product_name), name, email, content, rating(0~5), status(new|done), ip, createdAt
+          </p>
+        </div>
+      </section>
+
+      <p style="text-align:center; color:var(--text-dim); margin-top:36px;">
+        完整实现以 <code class="inline">server/routes.js</code> 为准。后台入口：<a href="admin.html" style="color:var(--accent);">admin.html</a>
+      </p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span data-i18n="footer.copy">© 2026 绿角犀 LVJIAOXI · 应用与游戏，触手可及</span> ·
+    <a href="index.html" data-i18n="footer.home">首页</a> ·
+    <a href="admin.html" data-i18n="footer.admin">后台管理</a> ·
+    <a href="privacy.html" data-i18n="footer.privacy">隐私政策</a> ·
+    <a href="terms.html" data-i18n="footer.terms">服务条款</a>
+  </footer>
+
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/i18n.js"></script>
+</body>
+</html>

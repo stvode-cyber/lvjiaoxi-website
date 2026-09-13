@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>站点维护中 | 绿角犀</title>
+  <meta name="description" content="绿角犀官网正在维护中，请稍后访问。" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0e27" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('gr-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <style>
+    .maint-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .maint-card { max-width: 480px; width: 100%; text-align: center; padding: 44px 36px; }
+    .maint-logo { width: 64px; height: 64px; margin: 0 auto 18px; }
+    .maint-title { font-size: 26px; font-weight: 700; margin: 0 0 10px; }
+    .maint-msg { color: var(--accent); font-size: 15px; min-height: 22px; margin: 0 0 12px; }
+    .maint-desc { color: var(--text-dim); font-size: 14px; line-height: 1.8; margin: 0 0 26px; }
+    .maint-spinner { width: 30px; height: 30px; margin: 0 auto 22px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: maint-spin 1s linear infinite; }
+    @keyframes maint-spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body data-page="maintenance">
+  <main id="main" tabindex="-1" class="maint-page">
+    <div class="panel maint-card">
+      <img class="maint-logo" src="assets/img/logo.svg" alt="绿角犀" width="64" height="64" decoding="async" />
+      <h1 class="maint-title">站点维护中</h1>
+      <div class="maint-spinner" aria-hidden="true"></div>
+      <p class="maint-msg" id="maint-msg">__MAINT_MSG__</p>
+      <p class="maint-desc">我们正在对站点进行升级与优化，<br />预计很快恢复，请稍后再来访问。</p>
+      <p style="margin:0;"><a class="btn btn-primary" href="admin.html">后台管理入口</a></p>
+    </div>
+  </main>
+  <script src="assets/js/theme.js"></script>
+</body>
+</html>

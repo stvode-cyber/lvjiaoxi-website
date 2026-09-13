@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>后台管理 | 绿角犀</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0e27" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('gr-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body data-page="admin">
+
+  <a class="skip-link" href="#admin-app">跳到主内容</a>
+
+  <!-- 登录视图 -->
+  <div id="login-view" class="login-card">
+    <h2 data-i18n="login.title">绿角犀 后台</h2>
+    <div class="sub" data-i18n="login.sub">请输入管理员账号</div>
+    <form id="login-form">
+      <div class="field">
+        <label for="username" data-i18n="login.user">用户名</label>
+        <input type="text" id="username" autocomplete="username" placeholder="默认 admin" data-i18n-ph="login.userPh" />
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="login.pass">口令</label>
+        <input type="password" id="password" autocomplete="current-password" placeholder="默认 admin123" data-i18n-ph="login.passPh" />
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;" data-i18n="btn.login">登录</button>
+      <div class="err" id="login-err"></div>
+    </form>
+    <div style="text-align:center;margin-top:14px;"><a href="index.html" style="color:var(--text-dim);font-size:13px;" data-i18n="login.back">← 返回官网</a></div>
+  </div>
+
+  <!-- 后台主界面 -->
+  <div id="admin-app" class="admin-wrap" role="main" tabindex="-1">
+    <div class="admin-head">
+      <h1 data-i18n="dash.title">数据看板</h1>
+      <div class="head-actions">
+        <span class="role-badge" id="role-badge" style="display:none;"></span>
+        <a class="refresh-btn" href="api.html" target="_blank" rel="noopener" title="接口文档" data-i18n="nav.api">API 文档</a>
+        <button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题" data-i18n-title="nav.toggleTheme">
+          <span class="icon-moon" aria-hidden="true">🌙</span><span class="icon-sun" aria-hidden="true">☀️</span>
+        </button>
+        <div class="lang-select"></div>
+        <button class="refresh-btn" id="refresh-btn" type="button" title="重新拉取最新数据" data-i18n="btn.refresh">↻ 刷新数据</button>
+        <button class="refresh-btn" id="auto-btn" type="button" title="每 30 秒自动刷新看板数据">自动刷新 关</button>
+        <span class="logout-btn" id="logout" data-i18n="btn.logout">退出登录</span>
+      </div>
+    </div>
+
+    <div class="readonly-banner" id="readonly-banner" style="display:none;" data-i18n="readonly.banner">当前为只读（viewer）账号，仅可查看数据，写操作已禁用。</div>
+
+    <div class="updated-at" id="updated-at">尚未加载数据</div>
+
+    <!-- KPI -->
+    <div class="kpi-grid" id="kpis"></div>
+
+    <!-- 流量趋势 -->
+    <div class="panel reveal">
+      <div class="chart-head">
+        <h3 style="margin:0;"><span id="trend-title" data-i18n="panel.trend">流量趋势</span></h3>
+        <div class="trend-days" id="trend-days" role="group" aria-label="趋势天数切换"></div>
+        <div class="chart-legend">
+          <span class="lg"><span class="sw v"></span><span data-i18n="legend.views">浏览量</span></span>
+          <span class="lg"><span class="sw d"></span><span data-i18n="legend.downloads">下载量</span></span>
+        </div>
+      </div>
+      <canvas id="trend-chart" class="trend-canvas"></canvas>
+      <div class="trend-total" id="trend-total"></div>
+    </div>
+
+    <!-- 页面浏览 -->
+    <div class="panel reveal">
+      <h3 data-i18n="panel.pageViews">各页面浏览量</h3>
+      <div id="page-bars"></div>
+    </div>
+
+    <!-- 流量来源 -->
+    <div class="panel reveal">
+      <h3 data-i18n="panel.sources">流量来源构成</h3>
+      <div id="source-bars"></div>
+      <h3 style="margin-top:22px;" data-i18n="panel.referrers">主要引荐域名 TOP</h3>
+      <div id="referrer-list" class="rank-list"></div>
+    </div>
+
+    <!-- 访问设备分布（维度 75 / H6c 导出分析 CSV） -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.browserDist">浏览器分布</h3>
+        <button class="refresh-btn" id="export-stats" type="button" title="导出访问分析各分布为 CSV 文件（来源/语言/时区/浏览器/系统）" data-i18n="btn.exportStats">⬇ 导出分析 CSV</button>
+      </div>
+      <div id="browser-bars"></div>
+      <h3 style="margin-top:22px;" data-i18n="panel.osDist">操作系统分布</h3>
+      <div id="os-bars"></div>
+    </div>
+
+    <!-- 地域 / 语言 -->
+    <div class="panel reveal">
+      <h3 data-i18n="panel.langDist">访问语言分布</h3>
+      <div id="lang-bars"></div>
+      <h3 style="margin-top:22px;" data-i18n="panel.tzDist">访问时区分布（地域粗分）</h3>
+      <div id="tz-bars"></div>
+    </div>
+
+    <!-- 热门下载 -->
+    <div class="panel reveal">
+      <h3 data-i18n="panel.topDownloads">热门下载 TOP</h3>
+      <div id="top-list" class="rank-list"></div>
+    </div>
+
+    <!-- 联系留言 -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.contacts">联系留言</h3>
+        <button class="refresh-btn" id="export-csv" type="button" title="导出全部留言为 CSV 文件" data-i18n="btn.exportCsv">⬇ 导出 CSV</button>
+        <button class="refresh-btn" id="backup-db" data-admin-only type="button" title="下载数据库完整备份（.db 文件）" data-i18n="btn.backupDb">⬇ 备份数据库</button>
+      </div>
+      <div class="pm-toolbar">
+        <div class="search-box">
+          <span class="search-ico">🔍</span>
+          <input id="contact-search" placeholder="搜索姓名 / 邮箱 / 留言…" data-i18n-ph="search.contact" />
+        </div>
+        <label class="batch-select-all" data-admin-only>
+          <input type="checkbox" id="contact-select-all" aria-label="全选当前页留言" />
+          <span data-i18n="contact.selectAll">全选本页</span>
+        </label>
+        <div class="chips" id="contact-filter">
+          <button class="chip active" data-status="all" data-i18n="chips.all">全部</button>
+          <button class="chip" data-status="new" data-i18n="chips.new">未处理</button>
+          <button class="chip" data-status="done" data-i18n="chips.done">已处理</button>
+        </div>
+      </div>
+      <div id="contact-list" class="msg-list"></div>
+      <div id="contact-batch" class="contact-batch" data-admin-only hidden>
+        <span id="contact-batch-count"></span>
+        <button type="button" class="btn-sm" id="batch-mark-done" data-i18n="contact.markDoneSel">标记已处理</button>
+        <button type="button" class="btn-sm danger" id="batch-del-sel" data-i18n="contact.delSel">删除选中</button>
+      </div>
+      <div id="contact-pager" class="pager"></div>
+    </div>
+
+    <!-- 产品反馈（维度 76 / H6c 导出 CSV） -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.feedback">产品反馈</h3>
+        <button class="refresh-btn" id="export-feedback" type="button" title="导出当前筛选的反馈为 CSV 文件（跨页全量）" data-i18n="btn.exportCsv">⬇ 导出 CSV</button>
+        <select id="fb-product-filter" class="btn-sm" aria-label="按产品筛选反馈" style="margin-left:auto;">
+          <option value="" data-i18n="fb.filterProduct">全部产品</option>
+        </select>
+      </div>
+      <div class="pm-toolbar">
+        <div class="search-box">
+          <span class="search-ico">🔍</span>
+          <input id="feedback-search" placeholder="搜索反馈内容 / 称呼 / 邮箱…" data-i18n-ph="search.feedback" />
+        </div>
+        <div class="chips" id="feedback-filter">
+          <button class="chip active" data-status="all" data-i18n="chips.all">全部</button>
+          <button class="chip" data-status="new" data-i18n="chips.new">未处理</button>
+          <button class="chip" data-status="done" data-i18n="chips.done">已处理</button>
+        </div>
+      </div>
+      <div id="feedback-list" class="msg-list"></div>
+      <div id="feedback-pager" class="pager"></div>
+    </div>
+
+    <!-- 反馈概览（H6d：总数 / 未处理 / 评分均值 + 按产品分布 + 近7天趋势） -->
+    <div class="panel reveal">
+      <h3 data-i18n="panel.fbOverview">反馈概览</h3>
+      <div class="kpi-grid" id="fb-overview-kpis"></div>
+      <div id="fb-overview"></div>
+    </div>
+
+    <!-- 产品管理 -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.products">产品管理</h3>
+        <input id="import-products-file" type="file" accept=".csv,text/csv" style="display:none;" />
+        <button class="refresh-btn" id="import-products" data-admin-only type="button" title="从 CSV 批量导入产品（列：名称,类型,分类,简介,图标,产品图,下载链接,版本,更新日志,排序；全部校验通过才导入）" data-i18n="btn.importCsv">⬆ 导入 CSV</button>
+        <button class="refresh-btn" id="export-products" data-admin-only type="button" title="导出全部产品为 CSV 文件" data-i18n="btn.exportCsv">⬇ 导出 CSV</button>
+      </div>
+      <form id="product-form" data-admin-only style="margin-bottom:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <input type="hidden" id="edit-id" value="" />
+        <div class="field" style="grid-column:1/2;"><label for="f-name" data-i18n="f.name">名称 *</label><input id="f-name" required maxlength="80" placeholder="产品名称" /></div>
+        <div class="field" style="grid-column:2/3;"><label for="f-type" data-i18n="f.type">类型 *</label>
+          <select id="f-type">
+            <option value="app" data-i18n="type.app">应用</option>
+            <option value="game" data-i18n="type.game">游戏</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:1/3;"><label for="f-category" data-i18n="f.category">分类</label>
+          <select id="f-category">
+            <option value="" data-i18n="cat.none">（不分类）</option>
+          </select>
+        </div>
+        <div class="field" style="grid-column:1/2;"><label for="f-icon" data-i18n="f.icon">图标(emoji)</label><input id="f-icon" maxlength="8" placeholder="📝" /></div>
+        <div class="field" style="grid-column:2/3;"><label for="f-sort" data-i18n="f.sort">排序权重</label><input id="f-sort" type="number" step="1" min="-9999" max="9999" placeholder="越大越靠前（默认 0）" data-i18n-ph="f.sortPh" /></div>
+        <div class="field" style="grid-column:1/3;"><label for="f-version" data-i18n="f.version">版本号</label><input id="f-version" maxlength="30" placeholder="如 1.2.0" data-i18n-ph="f.versionPh" /></div>
+        <div class="field" style="grid-column:1/3;"><label for="f-image" data-i18n="f.image">产品图</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="f-image" maxlength="500" placeholder="https://… 或 /assets/img/products/xx.jpg（留空用 emoji）" data-i18n-ph="f.imagePh" style="flex:1;min-width:0;" />
+            <input id="f-image-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" style="display:none;" />
+            <button id="f-image-upload" type="button" class="btn btn-ghost" style="flex:none;" data-i18n="f.upload">⬆ 上传图片</button>
+          </div>
+        </div>
+        <div class="field" style="grid-column:1/3;"><label for="f-url" data-i18n="f.url">下载链接</label><input id="f-url" maxlength="500" placeholder="https://... 或 /downloads/xxx" /></div>
+        <div class="field" style="grid-column:1/3;"><label for="f-desc" data-i18n="f.desc">简介</label><textarea id="f-desc" rows="2" maxlength="500" placeholder="一句话介绍"></textarea></div>
+        <div class="field" style="grid-column:1/3;"><label for="f-changelog" data-i18n="f.changelog">更新日志</label><textarea id="f-changelog" rows="3" maxlength="2000" placeholder="每行一条，格式自由，如：v1.2.0 · 2026-08-20" data-i18n-ph="f.changelogPh"></textarea></div>
+        <div style="grid-column:1/3;display:flex;gap:10px;">
+          <button class="btn btn-primary" type="submit" id="submit-btn" data-i18n="btn.addProduct">上架新产品</button>
+          <button class="btn btn-ghost" type="button" id="cancel-edit" style="display:none;" data-i18n="btn.cancelEdit">取消编辑</button>
+        </div>
+      </form>
+
+      <div class="pm-toolbar">
+        <div class="search-box">
+          <span class="search-ico">🔍</span>
+          <input id="pm-search" placeholder="搜索产品名称…" data-i18n-ph="search.product" />
+        </div>
+        <label class="batch-select-all" data-admin-only>
+          <input type="checkbox" id="pm-select-all" aria-label="全选当前筛选结果" />
+          <span data-i18n="bulk.selectAll">全选当前结果</span>
+        </label>
+        <div class="chips" id="pm-filter">
+          <button class="chip active" data-type="all" data-i18n="chips.all">全部</button>
+          <button class="chip" data-type="app" data-i18n="type.app">应用</button>
+          <button class="chip" data-type="game" data-i18n="type.game">游戏</button>
+        </div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr><th style="width:32px;"></th><th data-i18n="col.id">ID</th><th data-i18n="col.name">名称</th><th data-i18n="col.type">类型</th><th data-i18n="col.category">分类</th><th data-i18n="col.status">状态</th><th data-i18n="col.downloads">下载量</th><th data-i18n="col.sort">排序</th><th data-i18n="col.version">版本</th><th data-i18n="col.actions">操作</th></tr>
+        </thead>
+        <tbody id="product-rows"></tbody>
+      </table>
+      <div id="product-batch" class="contact-batch" data-admin-only hidden>
+        <span id="product-batch-count"></span>
+        <select id="batch-category" class="btn-sm" aria-label="批量设置分类">
+          <option value="" data-i18n="cat.none">（不分类）</option>
+        </select>
+        <button type="button" class="btn-sm" id="batch-cat-apply" data-i18n="bulk.category">批量改分类</button>
+        <button type="button" class="btn-sm" id="batch-shelf-on" data-i18n="bulk.shelfOn">批量上架</button>
+        <button type="button" class="btn-sm" id="batch-shelf-off" data-i18n="bulk.shelfOff">批量下架</button>
+        <button type="button" class="btn-sm danger" id="batch-del-products" data-i18n="bulk.del">删除选中</button>
+      </div>
+      <div class="empty" id="product-empty" style="display:none;" data-i18n="empty.products">暂无产品</div>
+    </div>
+
+    <!-- 产品分类管理（维度 58） -->
+    <div class="panel reveal" data-admin-only>
+      <div class="panel-head">
+        <h3 data-i18n="panel.categories">产品分类管理</h3>
+        <button class="refresh-btn" id="refresh-categories" type="button" title="重新拉取分类列表" data-i18n="btn.refreshAudit">↻ 刷新</button>
+      </div>
+      <form id="cat-add-form" style="margin-bottom:16px;display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:end;max-width:520px;">
+        <div class="field">
+          <label for="cat-name" data-i18n="cat.name">分类名称</label>
+          <input id="cat-name" maxlength="40" placeholder="如：效率 / RPG" />
+        </div>
+        <button class="btn btn-primary" type="submit" data-i18n="cat.add">新增分类</button>
+      </form>
+      <div id="cat-list" class="cat-list"></div>
+      <div class="empty" id="cat-empty" style="display:none;" data-i18n="cat.empty">暂无分类，请先新增。</div>
+    </div>
+
+    <!-- 前台公告条管理（候选G3） -->
+    <div class="panel reveal" data-admin-only>
+      <div class="panel-head">
+        <h3 data-i18n="panel.announcements">前台公告条</h3>
+        <button class="refresh-btn" id="refresh-announcements" type="button" title="重新拉取公告列表" data-i18n="btn.refreshAudit">↻ 刷新</button>
+      </div>
+      <form id="ann-add-form" style="margin-bottom:16px;display:grid;grid-template-columns:1fr 150px;gap:10px;align-items:end;max-width:520px;">
+        <div class="field">
+          <label for="ann-content" data-i18n="ann.content">公告内容（前台顶部横幅，≤200 字符）</label>
+          <input id="ann-content" maxlength="200" placeholder="如：绿角犀 2.0 正式发布，新增团队协作与云盘同步。" />
+        </div>
+        <button class="btn btn-primary" type="submit" data-i18n="ann.add">发布公告</button>
+      </form>
+      <div id="ann-list" class="ann-list"></div>
+      <div class="empty" id="ann-empty" style="display:none;" data-i18n="ann.empty">暂无公告。发布后将在全站前台顶部横幅展示。</div>
+    </div>
+
+    <!-- 账户安全 -->
+    <div class="panel reveal" data-admin-only>
+      <h3 data-i18n="panel.security">账户安全</h3>
+      <form id="pw-form" class="pw-form">
+        <div class="field">
+          <label for="old-pw" data-i18n="pw.current">当前口令</label>
+          <input type="password" id="old-pw" autocomplete="current-password" placeholder="请输入当前口令" />
+        </div>
+        <div class="field">
+          <label for="new-pw" data-i18n="pw.new">新口令（至少 6 位）</label>
+          <input type="password" id="new-pw" autocomplete="new-password" placeholder="设置新的登录口令" />
+        </div>
+        <div class="field">
+          <label for="new-pw2" data-i18n="pw.confirm">确认新口令</label>
+          <input type="password" id="new-pw2" autocomplete="new-password" placeholder="再次输入新口令" />
+        </div>
+        <button class="btn btn-primary" type="submit" id="pw-submit" data-i18n="btn.updatePw">更新口令</button>
+        <div class="form-msg" id="pw-msg"></div>
+      </form>
+    </div>
+
+    <!-- 站点维护模式（仅管理员可见/可操作） -->
+    <div class="panel reveal" data-admin-only>
+      <h3 data-i18n="panel.maintenance">站点维护模式</h3>
+      <p style="margin:0 0 12px;color:var(--text-dim);font-size:13px;line-height:1.7;" data-i18n="maint.desc">开启后前台页面与公开 API 统一返回维护提示（后台与静态资源不受影响）。</p>
+      <div class="field" style="margin-bottom:12px;">
+        <label for="maint-msg" data-i18n="maint.msg">维护提示语（选填，前台维护页展示，≤200 字符）</label>
+        <input id="maint-msg" maxlength="200" placeholder="例如：站点升级中，预计 2 小时后恢复" />
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" id="maint-on" type="button" data-i18n="maint.on">开启维护</button>
+        <button class="btn" id="maint-off" type="button" data-i18n="maint.off">关闭维护</button>
+        <span class="maint-status" id="maint-status"></span>
+      </div>
+      <div class="form-msg" id="maint-msg-box"></div>
+    </div>
+
+    <!-- 管理员账号（仅管理员可见/可操作） -->
+    <div class="panel reveal" data-admin-only>
+      <h3 data-i18n="panel.admins">管理员账号</h3>
+      <div id="admin-list" class="admin-list"></div>
+      <form id="add-admin-form" class="add-admin-form" style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 140px auto;gap:10px;align-items:end;">
+        <div class="field"><label data-i18n="na.user">用户名</label><input id="na-user" placeholder="新账号名" /></div>
+        <div class="field"><label data-i18n="na.pass">口令（至少 6 位）</label><input id="na-pass" type="password" placeholder="设置口令" /></div>
+        <div class="field"><label data-i18n="na.role">角色</label>
+          <select id="na-role">
+            <option value="admin" data-i18n="role.admin">管理员</option>
+            <option value="viewer" data-i18n="role.viewer">只读</option>
+          </select>
+        </div>
+        <button class="btn btn-primary" type="submit" id="na-submit" data-i18n="btn.addAccount">添加账号</button>
+      </form>
+      <div class="form-msg" id="na-msg"></div>
+    </div>
+
+    <!-- 系统信息 -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.sysinfo">系统信息</h3>
+        <button class="refresh-btn" id="check-update" type="button" data-i18n="btn.checkUpdate">↻ 检查更新</button>
+      </div>
+      <div id="sys-info" class="sys-grid"></div>
+    </div>
+
+    <!-- 操作审计日志 -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.audit">操作审计日志</h3>
+        <button class="refresh-btn" id="refresh-audit" type="button" data-i18n="btn.refreshAudit">↻ 刷新</button>
+      </div>
+      <div class="audit-tools">
+        <div class="search-box">
+          <span class="search-ico">🔍</span>
+          <input id="audit-search" placeholder="搜索操作/详情/IP…" data-i18n-ph="search.audit" />
+        </div>
+        <select id="audit-action" class="filter-select" aria-label="按操作类型筛选">
+          <option value="all">全部类型</option>
+          <option value="login">登录后台</option>
+          <option value="product_add">新增产品</option>
+          <option value="product_edit">编辑产品</option>
+          <option value="product_delete">删除产品</option>
+          <option value="password_change">修改口令</option>
+          <option value="contact_delete">删除留言</option>
+          <option value="contact_status">更新留言状态</option>
+          <option value="db_backup">导出数据库备份</option>
+          <option value="db_autobackup">自动备份数据库</option>
+          <option value="db_verify">校验备份完整性</option>
+        </select>
+        <button class="refresh-btn" id="export-audit" type="button" title="导出当前筛选的审计记录为 CSV 文件" data-i18n="btn.exportAudit">⬇ 导出审计 CSV</button>
+      </div>
+      <div id="audit-list" class="audit-list"></div>
+      <div class="pager" id="audit-pager"></div>
+    </div>
+
+    <!-- 访问日志 -->
+    <div class="panel reveal">
+      <div class="panel-head">
+        <h3 data-i18n="panel.accesslog">访问日志</h3>
+        <button class="refresh-btn" id="refresh-accesslog" type="button" data-i18n="btn.refreshAudit">↻ 刷新</button>
+      </div>
+      <div class="log-tools">
+        <div class="log-meta">尾部日志（含轮转备份），文件超 5MB 自动归档为 access.log.1</div>
+        <select id="accesslog-lines" class="filter-select" aria-label="日志行数">
+          <option value="100" selected>100 行</option>
+          <option value="300">300 行</option>
+          <option value="500">500 行</option>
+        </select>
+      </div>
+      <pre id="access-log" class="access-log"></pre>
+    </div>
+  </div>
+
+  <script src="assets/js/confirm-modal.js"></script>
+  <script src="assets/js/motion.js"></script>
+  <script src="assets/js/admin.js"></script>
+  <script src="assets/js/pwa.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/i18n.js"></script>
+</body>
+</html>

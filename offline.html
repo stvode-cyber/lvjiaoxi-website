@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>当前处于离线状态 | 绿角犀</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#0a0e27" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('gr-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body data-page="offline">
+  <a class="skip-link" href="#main">跳到主内容</a>
+
+  <nav class="nav">
+    <div class="brand"><img class="logo-img" src="assets/img/logo.svg" alt="绿角犀" width="30" height="30" decoding="async" /> 绿角犀</div>
+    <div class="links">
+      <a href="index.html" data-i18n="nav.home">首页</a>
+      <a href="download.html" data-i18n="nav.download">下载</a>
+    </div>
+    <form class="nav-search" role="search" action="download.html" aria-label="站内搜索" data-i18n-title="nav.searchForm">
+      <input id="nav-q" type="search" name="q" placeholder="搜索产品…" autocomplete="off" aria-label="搜索产品" data-i18n-ph="nav.searchPh" data-i18n-title="nav.searchInput" />
+      <button type="submit" aria-label="搜索" data-i18n-title="nav.searchBtn">🔍</button>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题" data-i18n-title="nav.toggleTheme">
+      <span class="icon-moon" aria-hidden="true">🌙</span><span class="icon-sun" aria-hidden="true">☀️</span>
+    </button>
+    <div class="lang-select"></div>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <section class="container" style="text-align:center; padding:110px 24px 150px;">
+      <div class="err-code" style="font-size:64px;">离线</div>
+      <h1 style="margin:6px 0 14px;">网络连接已断开</h1>
+      <p style="color:var(--text-dim); max-width:440px; margin:0 auto 12px;">
+        当前无法访问网络，这个页面还没有被缓存下来。已缓存的页面（首页、下载、联系我们、产品详情）仍可正常浏览。
+      </p>
+      <p id="offline-state" style="color:var(--text-dim); font-size:14px; margin:0 auto 24px;">
+        正在监听网络状态…
+      </p>
+      <button id="retry-btn" class="btn btn-primary" style="display:inline-flex; padding:12px 28px; cursor:pointer; margin-bottom:26px;" data-i18n="btn.retry">
+        重新尝试
+      </button>
+
+      <p class="err-sec-title" data-i18n="err.quickNav">快捷导航</p>
+      <nav class="err-links" aria-label="快捷导航">
+        <a href="index.html" data-i18n="nav.home">首页</a>
+        <a href="download.html" data-i18n="nav.download">下载</a>
+        <a href="contact.html" data-i18n="nav.contact">联系我们</a>
+      </nav>
+    </section>
+  </main>
+
+  <style>
+    .err-code {
+      font-size: 64px; font-weight: 800; line-height: 1;
+      background: var(--primary-grad);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+    }
+  </style>
+
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <script src="assets/js/offline.js"></script>
+</body>
+</html>

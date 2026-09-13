@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>产品下载 | 绿角犀</title>
+  <meta name="description" content="绿角犀产品下载中心——效率应用与精品游戏，官方安装包一键获取。" />
+  <meta name="keywords" content="绿角犀,应用下载,游戏下载,效率笔记,团队协作,云盘同步,密码管家,手游" />
+  <meta name="theme-color" content="#0a0e27" />
+  <link rel="icon" type="image/svg+xml" href="assets/img/logo.svg" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="alternate" type="application/rss+xml" href="/rss.xml" title="绿角犀 产品 RSS" />
+  <link rel="canonical" href="https://lvjiaoxi.example.com/download.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="绿角犀 LVJIAOXI" />
+  <meta property="og:title" content="产品下载 | 绿角犀" />
+  <meta property="og:description" content="绿角犀应用与游戏产品下载中心，官方安装包一键获取。" />
+  <meta property="og:url" content="https://lvjiaoxi.example.com/download.html" />
+  <meta property="og:image" content="https://lvjiaoxi.example.com/assets/img/og.jpg" />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="624" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="产品下载 | 绿角犀" />
+  <meta name="twitter:description" content="绿角犀应用与游戏产品下载中心。" />
+  <meta name="twitter:image" content="https://lvjiaoxi.example.com/assets/img/og.jpg" />
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('gr-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+    })();
+  </script>
+  <link rel="stylesheet" href="assets/css/style.css" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "首页", "item": "https://lvjiaoxi.example.com/" },
+      { "@type": "ListItem", "position": 2, "name": "下载中心", "item": "https://lvjiaoxi.example.com/download.html" }
+    ]
+  }
+  </script>
+</head>
+<body data-page="download">
+
+  <!-- 前台公告条（候选G3）：后台维护，加载后填充内容；关闭后本机记忆不再显示 -->
+  <div class="announcement-bar" id="ann-bar" hidden role="region" aria-label="公告">
+    <span class="ann-msg" id="ann-msg"></span>
+    <button class="ann-close" id="ann-close" type="button" aria-label="关闭公告">×</button>
+  </div>
+
+  <!-- 导航 -->
+  <a class="skip-link" href="#main">跳到主内容</a>
+
+  <nav class="nav">
+    <a class="brand" href="index.html"><img class="logo-img" src="assets/img/logo.svg" alt="绿角犀" width="30" height="30" decoding="async" /> 绿角犀</a>
+    <div class="links">
+      <a href="index.html#home" data-i18n="nav.home">首页</a>
+      <a href="index.html#company" data-i18n="nav.company">公司</a>
+      <a href="#apps" data-i18n="nav.apps" aria-current="page">应用</a>
+      <a href="#games" data-i18n="nav.games">游戏</a>
+      <a href="contact.html" data-i18n="nav.contact">联系</a>
+      <a href="changelog.html" data-i18n="nav.changelog">更新动态</a>
+      <a href="admin.html" class="cta" data-i18n="nav.admin">后台</a>
+    </div>
+    <form class="nav-search" role="search" action="download.html" aria-label="站内搜索" data-i18n-title="nav.searchForm">
+      <input id="nav-q" type="search" name="q" placeholder="搜索产品…" autocomplete="off" aria-label="搜索产品" data-i18n-ph="nav.searchPh" data-i18n-title="nav.searchInput" />
+      <button type="submit" aria-label="搜索" data-i18n-title="nav.searchBtn">🔍</button>
+    </form>
+    <button class="theme-toggle" type="button" aria-label="切换明暗主题" title="切换明暗主题" data-i18n-title="nav.toggleTheme">
+      <span class="icon-moon" aria-hidden="true">🌙</span><span class="icon-sun" aria-hidden="true">☀️</span>
+    </button>
+    <div class="lang-select"></div>
+    <button class="hamburger" type="button" aria-label="打开菜单" data-i18n-title="nav.menu"><span></span></button>
+  </nav>
+
+  <main id="main" tabindex="-1">
+
+  <!-- 下载页 Hero -->
+  <header class="subhero">
+    <div class="container">
+      <h1 class="reveal">产品下载中心</h1>
+      <p class="reveal" data-delay="1">选择你需要的应用或游戏，点击即可下载安装。所有产品均由绿角犀官方提供。</p>
+    </div>
+  </header>
+
+  <!-- 筛选栏 -->
+  <div class="filters">
+    <div class="container">
+      <div class="search-box">
+        <span class="search-ico">🔍</span>
+        <input id="search-input" type="search" placeholder="搜索产品名称或简介…" autocomplete="off" />
+      </div>
+      <div class="chips" id="type-chips">
+        <button class="chip active" type="button" data-type="all">全部</button>
+        <button class="chip" type="button" data-type="app">应用</button>
+        <button class="chip" type="button" data-type="game">游戏</button>
+      </div>
+      <select id="category-filter" class="cat-select" aria-label="按分类筛选">
+        <option value="">全部分类</option>
+      </select>
+      <select id="sort-filter" class="cat-select" aria-label="排序方式">
+        <option value="default" data-i18n="sort.default">默认排序</option>
+        <option value="new" data-i18n="sort.new">最新上架</option>
+        <option value="hot" data-i18n="sort.hot">下载量</option>
+        <option value="name" data-i18n="sort.name">名称</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- 热门下载排行（维度 65） -->
+  <section id="hot" style="padding-top:20px;">
+    <div class="container">
+      <div class="block-title reveal"><span class="dot"></span> <span data-i18n="hot.title">热门下载</span></div>
+      <div class="hot-strip" id="hot-list">
+        <div class="empty">加载中…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 应用下载区 -->
+  <section id="apps" style="padding-top:20px;">
+    <div class="container">
+      <div class="block-title reveal"><span class="dot"></span> 应用</div>
+      <div class="product-grid" id="app-list">
+        <div class="empty">加载中…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 游戏下载区 -->
+  <section id="games">
+    <div class="container">
+      <div class="block-title reveal"><span class="dot"></span> 游戏</div>
+      <div class="product-grid" id="game-list">
+        <div class="empty">加载中…</div>
+      </div>
+    </div>
+  </section>
+
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <span data-i18n="footer.copy">© 2026 绿角犀 LVJIAOXI · 应用与游戏，触手可及</span> ·
+    <a href="api.html" data-i18n="footer.api">API 文档</a> ·
+    <a href="admin.html" data-i18n="footer.admin">后台管理</a> ·
+    <a href="privacy.html" data-i18n="footer.privacy">隐私政策</a> ·
+    <a href="terms.html" data-i18n="footer.terms">服务条款</a>
+  </footer>
+
+  <!-- 产品详情弹窗 -->
+  <div class="modal" id="pd-modal" aria-hidden="true">
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pd-name">
+      <button class="modal-x" type="button" data-close aria-label="关闭">×</button>
+      <div class="modal-icon" id="pd-icon">📦</div>
+      <img class="modal-img" id="pd-img" alt="" style="display:none;" decoding="async" width="960" height="250" />
+      <div class="modal-meta">
+        <h3 id="pd-name">产品名称</h3>
+        <span class="modal-type app" id="pd-type">应用</span>
+      </div>
+      <p class="modal-desc" id="pd-desc"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary download-btn" id="pd-download" type="button" data-id="" data-url="">下载</button>
+        <a class="modal-page-link" id="pd-page" href="#">查看完整页面 ›</a>
+        <span class="modal-hint" id="pd-hint"></span>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/js/motion.js"></script>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/pwa.js"></script>
+  <script src="assets/js/theme.js"></script>
+  <script src="assets/js/i18n.js"></script>
+</body>
+</html>

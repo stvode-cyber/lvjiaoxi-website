@@ -1,0 +1,80 @@
+name: 每周 AI 团队巡检
+
+on:
+  schedule:
+    # 每周一凌晨 02:00 UTC（北京时间 10:00）
+    - cron: '0 2 * * 1'
+  # 允许手动触发
+  workflow_dispatch:
+
+jobs:
+  weekly-inspect:
+    name: 🔍 每周 AI 团队健康巡检
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 安装依赖（better-sqlite3 需要）
+        run: npm install --omit=dev
+
+      - name: 跑 AI 团队巡检
+        run: node tools/inspect-ai-team.js 2>&1 | tee /tmp/inspect.log
+
+      - name: 跑冒烟测试（轻量 --spawn）
+        run: node tools/smoke-test.js --spawn 2>&1 | tail -20 | tee /tmp/smoke.log
+
+      - name: 汇总报告
+        run: |
+          echo "========================================"
+          echo "🤖 绿角犀官网 AI 团队每周巡检报告"
+          echo "📅 $(date -u '+%Y-%m-%d %H:%M UTC')"
+          echo "========================================"
+          echo ""
+          echo "### 巡检结果"
+          grep "✅ 通过:\|⚠️ *警告:\|❌ 失败:\|整体健康度" /tmp/inspect.log
+          echo ""
+          echo "### Skill 健康度"
+          grep "Skill 汇总:" /tmp/inspect.log
+          echo ""
+          echo "### 路由覆盖率"
+          grep "实际路由.*Agent 覆盖" /tmp/inspect.log
+          echo ""
+          echo "### 关键知识点覆盖"
+          grep "✅ 「\|⚠️  「\|❌ 「" /tmp/inspect.log
+          echo ""
+          echo "### 冒烟测试"
+          grep "通过\|失败\|OK\|FAIL\|全部" /tmp/smoke.log | tail -5
+          echo ""
+          echo "========================================"
+          echo "完整日志见 Artifact"
+          echo "========================================"
+
+      - name: 上传巡检报告
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-inspect-report
+          path: |
+            /tmp/inspect.log
+            /tmp/smoke.log
+          retention-days: 90
+
+      # 可选：失败时通知（需要配置 secrets 里的 webhook）
+      - name: 巡检失败通知（钉钉/飞书）
+        if: failure()
+        run: |
+          echo "⚠️ 每周巡检发现问题！"
+          echo "CI 地址: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo ""
+          echo "失败项："
+          grep "❌" /tmp/inspect.log || echo "（无明确失败项，可能是冒烟挂了）"
+          # 如果配置了 webhook secret，这里会推送消息
+          if [ -n "${{ secrets.WEEKLY_INSPECT_WEBHOOK }}" ]; then
+            curl -s -X POST "${{ secrets.WEEKLY_INSPECT_WEBHOOK }}" \
+              -H 'Content-Type: application/json' \
+              -d "{\"msgtype\":\"text\",\"text\":{\"content\":\"🤖 绿角犀 AI 团队巡检发现问题！CI: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\n\n$(grep '❌' /tmp/inspect.log | head -10)\"}}"
+          fi

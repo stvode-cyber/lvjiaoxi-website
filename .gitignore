@@ -1,0 +1,30 @@
+# 依赖
+node_modules/
+
+# 环境变量（含后台口令，绝不可入库）
+.env
+.env.local
+*.env
+
+# 运行时数据：SQLite 数据库及其 WAL 文件、访问日志
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/*.log
+data/access.log*
+
+# 数据库自动备份（含全部留言数据，绝不入库）
+data/backups/
+
+# 日志
+*.log
+npm-debug.log*
+
+# 系统与编辑器
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# AI 生成素材的中间产物目录
+generated-images/

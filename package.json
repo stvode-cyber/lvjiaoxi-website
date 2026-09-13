@@ -1,0 +1,19 @@
+{
+  "name": "lvjiaoxi-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "绿角犀官网：公司介绍 + 产品下载 + 后台数据管理",
+  "scripts": {
+    "start": "node server/server.js",
+    "smoke": "node tools/smoke-test.js",
+    "smoke:spawn": "node tools/smoke-test.js --spawn",
+    "optimize:images": "node tools/optimize-images.js",
+    "backup": "node tools/maintain.js backup",
+    "maintain": "node tools/maintain.js stats"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "compression": "^1.8.1",
+    "express": "^4.19.2"
+  }
+}
