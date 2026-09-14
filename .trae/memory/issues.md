@@ -108,3 +108,16 @@
 | **关联** | docker-deploy-guide/SKILL.md、security-audit-guide/SKILL.md、AGENTS.md |
 | **日期** | 2026-09-12 |
 | **已入 Skill** | ✅ docker-deploy-guide + security-audit-guide + AGENTS.md |
+
+## I-009：Nginx 配置文件被删导致全站不可用
+
+| 字段 | 内容 |
+|------|------|
+| **问题** | /etc/nginx/conf.d/lvjiaoxi.conf 被删除，IP 直访落到 zhiyun-erp-backend，绿角犀全站不可用 |
+| **解决方法** | 从备份 lvjiaoxi.conf.bak.with-ip 恢复，加 chattr +i 不可变锁 |
+| **根因** | 服务器 47.116.59.141 跑多个项目，今天 20:13 有人/脚本删了 lvjiaoxi.conf + 新建 erp-web.conf（zhiyun-erp 的部署脚本） |
+| **预防** | 1. Nginx conf 加 chattr +i 锁（改前先解锁）<br>2. memory-manager.js before-edit 增加 lvjiaoxi.conf 存在性检查<br>3. 定期巡检脚本检查关键配置文件是否存在 |
+| **严重程度** | 🔴 高（全站不可用 10+ 分钟） |
+| **关联** | /etc/nginx/conf.d/lvjiaoxi.conf、memory-manager.js、docker-deploy-guide |
+| **日期** | 2026-09-14 |
+| **已入 Skill** | ❌ 还没 |

@@ -119,6 +119,7 @@ bash /opt/lvjiaoxi-web/deploy/rollback-nginx-https.sh
 | 外网 502 | Nginx 反代的 Node 崩了 | `pm2 logs lvjiaoxi-web` 看 err |
 | 外网 403 "Non-compliance ICP" | 阿里云 WAF 拦截 | ICP 备案通过后自动恢复 |
 | HTTPS 签不了 | DNS 未生效 | 等 DNS 生效后 certbot |
+| IP 访问落到其他项目 | lvjiaoxi.conf 被删/被覆盖 | 从 .bak 恢复 + `chattr +i` 加文件锁（改前先解锁） |
 
 ## 禁止事项
 
