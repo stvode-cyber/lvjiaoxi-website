@@ -1,13 +1,18 @@
 /* 绿角犀官网 Service Worker：离线可用 + 静态资源缓存 */
-const CACHE = 'lvjx-v4';
+const CACHE = 'lvjx-v5';
 const OFFLINE_URL = '/offline.html';
 const ASSETS = [
   '/',
   '/index.html',
-  '/download.html',
-  '/changelog.html',
-  '/contact.html',
   '/product.html',
+  '/download.html',
+  '/contact.html',
+  '/changelog.html',
+  '/privacy.html',
+  '/terms.html',
+  '/admin.html',
+  '/api.html',
+  '/maintenance.html',
   '/404.html',
   OFFLINE_URL,
   '/assets/css/style.css',

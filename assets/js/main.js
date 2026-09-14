@@ -70,6 +70,17 @@
     if (first) first.classList.add('active');
   }
 
+  /* ---------- 0.4 快捷键：/ 聚焦导航搜索框，Esc 已用于关闭弹窗 ---------- */
+  document.addEventListener('keydown', function (e) {
+    // 用户正在输入框/textarea 里打字时不要拦截
+    var tag = (e.target && e.target.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (e.key === '/' || e.code === 'Slash') {
+      var q = document.getElementById('nav-q');
+      if (q) { e.preventDefault(); q.focus(); q.select(); }
+    }
+  });
+
   /* ---------- 1) 触达式动态 ---------- */
   var reveals = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {

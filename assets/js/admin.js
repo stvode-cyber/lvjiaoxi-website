@@ -122,6 +122,9 @@
     appView.classList.remove('show');
     loginView.classList.remove('hidden');
     document.getElementById('password').value = '';
+    // 回填上次登录的用户名，节省重复输入
+    var savedUser = getUsername();
+    if (savedUser) document.getElementById('username').value = savedUser;
     clearIdle();
   }
 

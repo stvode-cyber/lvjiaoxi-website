@@ -8,5 +8,5 @@ module.exports = {
   port: process.env.PORT || 3000,
   // 站点正式域名（用于 sitemap / robots / 分享链接）。优先级：环境变量 SITE_URL > 此处默认值
   // 上线时改为真实域名，例如 https://www.lvjiaoxi.com
-  siteUrl: process.env.SITE_URL || 'https://lvjiaoxi.example.com',
+  siteUrl: process.env.SITE_URL || 'https://lvjiaoxi.com',
 };
