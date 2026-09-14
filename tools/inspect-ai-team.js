@@ -59,7 +59,8 @@ console.log('='.repeat(60));
 const REQUIRED_AGENTS = [
   'frontend-dev', 'backend-dev', 'code-reviewer', 'test-engineer',
   'e2e-test-engineer', 'security-auditor', 'devops-engineer',
-  'api-doc-writer', 'market-researcher', 'self-evolution-engineer'
+  'api-doc-writer', 'market-researcher', 'self-evolution-engineer',
+  'core/ux-experience-tester'
 ];
 
 for (const agent of REQUIRED_AGENTS) {

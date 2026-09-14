@@ -96,5 +96,7 @@
 | 要审查代码 | code-reviewer |
 | 要查安全问题 | security-auditor |
 | 要部署/运维 | devops-engineer |
+| 要测用户体验/找一键化机会 | ux-experience-tester |
+| AI 团队自身进化 | self-evolution-engineer |
 
 **重要**：每个 Agent 的角色文件里有更细的职责边界和禁止事项，先看角色再动手。
